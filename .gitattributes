@@ -1,0 +1,6 @@
+# Device scripts run on Android's sh: CRLF breaks them.
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.0 text eol=lf
+*.apk binary
+*.jpg binary

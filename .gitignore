@@ -1,0 +1,4 @@
+.tools/
+launcher/build/
+launcher/keystore/
+*.jks
