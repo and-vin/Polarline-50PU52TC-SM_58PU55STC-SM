@@ -45,4 +45,4 @@ Options: `-NoRoot` (no CAs and root tweaks), `-NoLauncher`, `-NoKeyboard`; for `
 
 The scripts are built from commands verified on a 58PU55STC-SM but have not been run end-to-end on a fresh TV. Report problems in [Issues](../../issues).
 
-Details: [docs/notes.en.md](docs/notes.en.md) (measurements, causes), [AGENTS.md](AGENTS.md) (for AI agents). MIT license.
+Details: [docs/notes.en.md](docs/notes.en.md) (measurements, causes), [AGENTS.md](AGENTS.md) (for AI agents), [docs/alice-plan.en.md](docs/alice-plan.en.md) (plan: play a film on the TV by voice via Alice). MIT license.

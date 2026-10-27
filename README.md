@@ -45,4 +45,4 @@
 
 Скрипты собраны из команд, проверенных на 58PU55STC-SM, но целиком на «чистом» ТВ не прогонялись. О проблемах пишите в [Issues](../../issues).
 
-Подробности: [docs/notes.md](docs/notes.md) (замеры, причины), [AGENTS.md](AGENTS.md) (для ИИ-агентов). Лицензия MIT.
+Подробности: [docs/notes.md](docs/notes.md) (замеры, причины), [AGENTS.md](AGENTS.md) (для ИИ-агентов), [docs/alice-plan.md](docs/alice-plan.md) (план: фильм на ТВ голосом через Алису). Лицензия MIT.

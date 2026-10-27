@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Instructions for AI agents helping an owner of a Polarline 50PU52TC-SM / 58PU55STC-SM. Human docs: `README.md` (ru), `README.en.md`; causes and measurements: `docs/notes.en.md`.
+Instructions for AI agents helping an owner of a Polarline 50PU52TC-SM / 58PU55STC-SM. Human docs: `README.md` (ru), `README.en.md`; causes and measurements: `docs/notes.en.md`; planned Alice voice control: `docs/alice-plan.en.md`.
 
 ## Device
 
