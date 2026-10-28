@@ -97,6 +97,14 @@ Details:
 - **КиноПоиск, account choice:** on a cold start and for many links КиноПоиск shows "Choose an account" (family account). After `input keyevent 23` a film link is kept, a search link is lost.
 - **Memory:** during the tests the system killed КиноПоиск, RUTUBE, the launcher and Google services at once (`am_proc_died`). The service should close other video apps before opening a link.
 
+## Step 3: film search module
+
+`alice/search.py` uses only the Python standard library, so it fits Yandex Cloud Functions. `search("<title>")` returns КиноПоиск data (if any) and a list of commands for the TV service in the step 1 format: RUTUBE videos (`open`), then КиноПоиск search (`search_keys`, typing via key presses) and VK Video search (`search`). The КиноПоиск key comes from the `KINOPOISK_API_KEY` environment variable.
+
+- RUTUBE is queried twice in parallel ("<title>" and "<title> фильм" or "<title> <year>"). Filtered out: shorter than 60 min (18 min for series), paid videos and streams, categories outside "Фильмы/Сериалы/…", trailers, reviews, music, clip compilations, "sequels" like "Интерстеллар 2", videos where the title is part of another name ("Остров сокровищ" for "Остров"). With КиноПоиск data, videos with another year in the name or a length more than 30 min off are dropped.
+- КиноПоиск answers in 7–10 s, so it runs in the background and is cached: the first request for a title has no КиноПоиск data, a repeated one has it.
+- Check: `KINOPOISK_API_KEY=… python3 alice/check_search.py` (12 titles, Russian films and series). Response 0.9–1.6 s. RUTUBE found the full film for 7 of 12: Интерстеллар, Иван Васильевич меняет профессию, Москва слезам не верит, Т-34, Кин-дза-дза!, Остров (Lungin). Not found: Брат 2, Дюна, Начало (2010), Холоп, Ликвидация, Игра престолов — for these the КиноПоиск and VK Video searches remain.
+
 ## Next steps
 
 - **The TV is unreachable over the network while asleep (backlog).** The power button puts the TV into suspend-to-RAM (`ro.CVTE_EN_STR=1`): the whole SoC sleeps, Wi‑Fi included, even though `wifi_sleep_policy=2`. The TV answers neither ping nor adb, and the TV service cannot receive a command. Options: Wake-on-WLAN — the firmware has `MtkTvNetwork.setWifiWolCtl(boolean)`/`getWifiWolCtl()`, wake the TV with a magic packet from the LAN (e.g. the router or the station); blocking suspend (a wakelock as root) — higher standby power; the "STR" switch in TV settings — with STR off the TV powers off completely, so the network is gone too. Check what actually works on this firmware.
