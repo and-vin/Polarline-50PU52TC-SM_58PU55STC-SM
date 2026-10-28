@@ -27,7 +27,7 @@ Instructions for AI agents helping an owner of a Polarline 50PU52TC-SM / 58PU55S
 | `scripts/device/optimize.sh` | On the TV as shell: debloat, animations, location, IME, home activity, `cmd package compile -m speed` (`apply`/`revert`) |
 | `scripts/device/root.sh` | On the TV as root: root CAs into `/system/etc/security/cacerts`, disable boot-time components, hide EShare (`apply`/`revert`) |
 | `certs/` | ISRG Root X1, HARICA TLS RSA Root CA 2021, SSL.com TLS RSA Root CA 2022 (`subject_hash_old.0`, PEM) |
-| `launcher/` | TV Home sources, compile-only CVTE stubs, `build.ps1` (aapt2 → javac → d8 → zipalign → apksigner, no Gradle) |
+| `launcher/` | TV Home sources, compile-only CVTE stubs, `build.ps1` / `build.sh` (aapt2 → javac → d8 → zipalign → apksigner, no Gradle) |
 | `apk/TvHome.apk` | Prebuilt launcher; rebuild and replace it when launcher sources change |
 
 Keep `*.sh` with LF line endings (`.gitattributes`); keep `*.ps1` ASCII-only, Windows PowerShell 5.1 misreads UTF-8 without BOM.

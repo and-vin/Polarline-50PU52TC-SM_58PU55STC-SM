@@ -13,7 +13,7 @@
 - Home на главном экране переключает на ТВ (так ведёт себя система, как и с родным лаунчером).
 - Если родной лаунчер остался в памяти, через 3 секунды после возврата на главный экран выгружает его (~50 МБ).
 
-## Сборка (Windows)
+## Сборка
 
 Нужны JDK 17 и Android SDK с `platforms;android-25` и `build-tools;34.0.0`.
 
@@ -23,6 +23,8 @@ adb install -r build\tvhome.apk
 adb shell cmd package compile -m speed -f com.andvin.tvhome
 adb shell cmd package set-home-activity com.andvin.tvhome/.HomeActivity
 ```
+
+Linux/macOS: `./build.sh <android-sdk> <jdk-17> [file.jks] [пароль]`, результат — `build/tvhome.apk`; нужен ещё `python3`.
 
 Без `-Keystore` создаётся новый ключ в `keystore/` (в git не попадает). APK, подписанный другим ключом, встанет поверх `apk/TvHome.apk` только после `adb uninstall com.andvin.tvhome`.
 

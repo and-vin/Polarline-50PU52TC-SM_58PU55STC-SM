@@ -13,7 +13,7 @@
 - Home on the home screen switches to TV (system behaviour, same as with the stock launcher).
 - If the stock launcher stayed in memory, it is unloaded 3 s after returning home (~50 MB).
 
-## Build (Windows)
+## Build
 
 Needs JDK 17 and an Android SDK with `platforms;android-25` and `build-tools;34.0.0`.
 
@@ -23,6 +23,8 @@ adb install -r build\tvhome.apk
 adb shell cmd package compile -m speed -f com.andvin.tvhome
 adb shell cmd package set-home-activity com.andvin.tvhome/.HomeActivity
 ```
+
+Linux/macOS: `./build.sh <android-sdk> <jdk-17> [file.jks] [password]`, output `build/tvhome.apk`; also needs `python3`.
 
 Without `-Keystore` a new key is created in `keystore/` (git-ignored). An APK signed with a different key replaces `apk/TvHome.apk` only after `adb uninstall com.andvin.tvhome`.
 
