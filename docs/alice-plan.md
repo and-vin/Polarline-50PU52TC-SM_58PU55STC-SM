@@ -65,7 +65,7 @@ adb shell am start -a android.intent.action.SEARCH -e query "Интерстел�
 |---|---|---|---|
 | RUTUBE | работает: `rutube://rutube.ru/video/<id>/` → плеер | работает: `rutube://rutube.ru/search/?query=<запрос>` → результаты | не принимает |
 | VK Видео | работает: `https://vk.com/video<owner>_<id>` → сразу воспроизведение | работает: `vkvideo://video/search?query=<запрос>` → результаты | фильтр есть, запрос игнорирует |
-| КиноПоиск | только с id КиноПоиск HD, какой нужен формат — не выяснено | не работает | фильтр есть, запрос игнорирует |
+| КиноПоиск | работает только с HD id: `kpatv://film?filmId=<hd_id>` или `https://hd.kinopoisk.ru/film/<hd_id>` → карточка; как получить HD id по названию без входа — не выяснено | по ссылке не работает; работает ввод нажатиями (см. ниже) | фильтр есть, запрос игнорирует |
 
 Рабочие команды:
 
@@ -74,13 +74,27 @@ adb shell am start -a android.intent.action.VIEW -d "rutube://rutube.ru/video/<i
 adb shell am start -a android.intent.action.VIEW -d "'rutube://rutube.ru/search/?query=<запрос>'" rtb.mobile.android
 adb shell am start -a android.intent.action.VIEW -d "https://vk.com/video<owner>_<id>" com.vk.tv
 adb shell am start -a android.intent.action.VIEW -d "'vkvideo://video/search?query=<запрос>'" com.vk.tv
+adb shell am start -a android.intent.action.VIEW -d "'kpatv://film?filmId=<hd_id>'" ru.kinopoisk.tv
 ```
 
 Подробности:
 
 - **RUTUBE:** `https://rutube.ru/...` приложение не принимает (`unable to resolve Intent`), только схему `rutube://rutube.ru` (`ru.rutube.app.SplashActivity`). Ролики 18+ сначала спрашивают «Вам уже есть 18 лет?», по умолчанию выбрано «Нет».
 - **VK Видео:** все ссылки принимает `com.vk.tv/.presentation.base.links.TvLinkRedirectActivity` (`https://vk.com/video.*`, `vkvideo://video|vk.com/.*`). У этой activity есть фильтр `SEARCH`, но без категории `DEFAULT`: без `-n` intent не находится, а с `-n` приложение открывает главную. Холодный старт — около 30 с.
-- **КиноПоиск:** ссылки `https://hd.kinopoisk.ru/film/<id>` и `kpatv://film?filmId=<id>` открывают `HdContentCardActivity`. С id с kinopoisk.ru (`258687`) приложение показывает «Сервер недоступен» — похоже, нужен id КиноПоиск HD (32 hex); как получить его по названию, не выяснено. `https://www.kinopoisk.ru/film/...` не принимается. В приложении есть обработчик `kpatv://home` с параметром `search_query`, но варианты `kpatv://home/search?search_query=…` и `kpatv://home?page=search&search_query=…` открывают главную. Перед каждой ссылкой КиноПоиск показывает «Выберите аккаунт» (семейный аккаунт); после выбора ссылка на фильм сохраняется, ссылка на поиск теряется. Службе на ТВ придётся либо подтверждать выбор (`input keyevent 23`), либо искать, как его отключить. SEARCH без `-n` не находится; `.splash.impl.presentation.SplashScreenActivity` отключена, `DeepLinkTargetActivity` открывает главную.
+- **КиноПоиск, ссылка на фильм:** id КиноПоиск HD — 32 hex (например `07e9b11ab8574bd3a863184ad89fd72e`), это не id с kinopoisk.ru. С числовым id (`258687`, `43395`) карточка открывается с ошибкой «Сервер недоступен». Формат нашёлся в `/data/data/ru.kinopoisk.tv/databases/YandexPlayer.db` (root, только чтение): приложение кладёт в рекомендации Android TV ссылки `kpatv://film/?filmId=<hd_id>&utm_source=androidtv&utm_medium=channels` (base64 дважды). Обе ссылки — `kpatv://film?filmId=<hd_id>` и `https://hd.kinopoisk.ru/film/<hd_id>` — открывают `HdContentCardActivity` с карточкой примерно за 6 с, когда приложение уже запущено. `https://www.kinopoisk.ru/film/...` не принимается. Публичного запроса «название или kp-id → HD id» без входа не нашлось.
+- **КиноПоиск, поиск:** ссылками не открывается. В приложении есть обработчик `kpatv://home` с параметром `search_query`, но `kpatv://home/search?search_query=…` и `kpatv://home?page=search&search_query=…` открывают главную. SEARCH без `-n` не находится; `.splash.impl.presentation.SplashScreenActivity` отключена, `DeepLinkTargetActivity` открывает главную. Работает ввод нажатиями, root не нужен:
+
+  ```
+  adb shell am start -n ru.kinopoisk.tv/.presentation.splash.SplashActivity   # до главной ~15 с
+  # если открылось «Выберите аккаунт» (SelectFamilyAccountActivity): adb shell input keyevent 23
+  adb shell input keyevent 21   # влево, в боковое меню
+  adb shell input keyevent 19   # вверх, на «Поиск»
+  adb shell input keyevent 23   # OK, открывается экран поиска с курсором в строке
+  adb shell input text Interstellar   # результаты через ~5–8 с
+  ```
+
+  `input text` вводит только ASCII, для кириллицы нужен другой способ (например, IME-приложение или ввод латиницей). Последовательность клавиш зависит от того, где стоит фокус на главной; службе надёжнее проверять `mCurrentFocus` после каждого шага.
+- **КиноПоиск, выбор аккаунта:** при холодном старте и по многим ссылкам КиноПоиск показывает «Выберите аккаунт» (семейный аккаунт). После `input keyevent 23` ссылка на фильм сохраняется, ссылка на поиск теряется.
 - **Память:** при пробах система разом выгрузила КиноПоиск, RUTUBE, лаунчер и сервисы Google (`am_proc_died`). Перед открытием ссылки службе стоит закрывать другие видеоприложения.
 
 ## Дальнейшие шаги

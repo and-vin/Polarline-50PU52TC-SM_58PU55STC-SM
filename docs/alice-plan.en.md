@@ -65,7 +65,7 @@ Tested with КиноПоиск 2.262.1, RUTUBE 31.14.2.TV-google and VK Video 2.
 |---|---|---|---|
 | RUTUBE | works: `rutube://rutube.ru/video/<id>/` → player | works: `rutube://rutube.ru/search/?query=<query>` → results | not accepted |
 | VK Video | works: `https://vk.com/video<owner>_<id>` → starts playing | works: `vkvideo://video/search?query=<query>` → results | filter exists, query ignored |
-| КиноПоиск | only with a КиноПоиск HD id; the id format is not established | does not work | filter exists, query ignored |
+| КиноПоиск | works only with an HD id: `kpatv://film?filmId=<hd_id>` or `https://hd.kinopoisk.ru/film/<hd_id>` → card; how to get the HD id from a title without signing in is not established | not via links; typing via key presses works (see below) | filter exists, query ignored |
 
 Working commands:
 
@@ -74,13 +74,27 @@ adb shell am start -a android.intent.action.VIEW -d "rutube://rutube.ru/video/<i
 adb shell am start -a android.intent.action.VIEW -d "'rutube://rutube.ru/search/?query=<query>'" rtb.mobile.android
 adb shell am start -a android.intent.action.VIEW -d "https://vk.com/video<owner>_<id>" com.vk.tv
 adb shell am start -a android.intent.action.VIEW -d "'vkvideo://video/search?query=<query>'" com.vk.tv
+adb shell am start -a android.intent.action.VIEW -d "'kpatv://film?filmId=<hd_id>'" ru.kinopoisk.tv
 ```
 
 Details:
 
 - **RUTUBE:** `https://rutube.ru/...` is not accepted (`unable to resolve Intent`), only the `rutube://rutube.ru` scheme (`ru.rutube.app.SplashActivity`). 18+ videos first ask "Are you 18?", with "No" selected by default.
 - **VK Video:** all links go to `com.vk.tv/.presentation.base.links.TvLinkRedirectActivity` (`https://vk.com/video.*`, `vkvideo://video|vk.com/.*`). That activity has a `SEARCH` filter without the `DEFAULT` category: without `-n` the intent does not resolve, and with `-n` the app opens its home screen. Cold start is about 30 s.
-- **КиноПоиск:** `https://hd.kinopoisk.ru/film/<id>` and `kpatv://film?filmId=<id>` open `HdContentCardActivity`. With a kinopoisk.ru id (`258687`) the app shows "Server unavailable" — it probably needs a КиноПоиск HD id (32 hex); how to get it from a title is not established. `https://www.kinopoisk.ru/film/...` is not accepted. The app has a `kpatv://home` handler with a `search_query` parameter, but `kpatv://home/search?search_query=…` and `kpatv://home?page=search&search_query=…` open the home screen. Before every link КиноПоиск shows "Choose an account" (family account); after choosing, a film link is kept, a search link is lost. The TV service will have to confirm the choice (`input keyevent 23`) or find a way to turn it off. SEARCH does not resolve without `-n`; `.splash.impl.presentation.SplashScreenActivity` is disabled, `DeepLinkTargetActivity` opens the home screen.
+- **КиноПоиск, film link:** the КиноПоиск HD id is 32 hex (e.g. `07e9b11ab8574bd3a863184ad89fd72e`), not the kinopoisk.ru id. With a numeric id (`258687`, `43395`) the card opens with "Server unavailable". The format was found in `/data/data/ru.kinopoisk.tv/databases/YandexPlayer.db` (root, read only): the app puts `kpatv://film/?filmId=<hd_id>&utm_source=androidtv&utm_medium=channels` links (base64 twice) into the Android TV recommendations. Both `kpatv://film?filmId=<hd_id>` and `https://hd.kinopoisk.ru/film/<hd_id>` open `HdContentCardActivity` with the card in about 6 s when the app is already running. `https://www.kinopoisk.ru/film/...` is not accepted. No public request "title or kp id → HD id" without signing in was found.
+- **КиноПоиск, search:** links do not open it. The app has a `kpatv://home` handler with a `search_query` parameter, but `kpatv://home/search?search_query=…` and `kpatv://home?page=search&search_query=…` open the home screen. SEARCH does not resolve without `-n`; `.splash.impl.presentation.SplashScreenActivity` is disabled, `DeepLinkTargetActivity` opens the home screen. Typing via key presses works, no root needed:
+
+  ```
+  adb shell am start -n ru.kinopoisk.tv/.presentation.splash.SplashActivity   # ~15 s to the home screen
+  # if "Choose an account" (SelectFamilyAccountActivity) opens: adb shell input keyevent 23
+  adb shell input keyevent 21   # left, into the side menu
+  adb shell input keyevent 19   # up, to "Search"
+  adb shell input keyevent 23   # OK, the search screen opens with the cursor in the field
+  adb shell input text Interstellar   # results in ~5–8 s
+  ```
+
+  `input text` types ASCII only; Cyrillic needs another way (e.g. an IME app, or a Latin-script query). The key sequence depends on where the focus is on the home screen; the service should check `mCurrentFocus` after each step.
+- **КиноПоиск, account choice:** on a cold start and for many links КиноПоиск shows "Choose an account" (family account). After `input keyevent 23` a film link is kept, a search link is lost.
 - **Memory:** during the tests the system killed КиноПоиск, RUTUBE, the launcher and Google services at once (`am_proc_died`). The service should close other video apps before opening a link.
 
 ## Next steps
