@@ -103,7 +103,7 @@ Details:
 
 - RUTUBE is queried twice in parallel ("<title>" and "<title> фильм" or "<title> <year>"). Filtered out: shorter than 60 min (18 min for series), paid videos and streams, categories outside "Фильмы/Сериалы/…", trailers, reviews, music, clip compilations, "sequels" like "Интерстеллар 2", videos where the title is part of another name ("Остров сокровищ" for "Остров"). With КиноПоиск data, videos with another year in the name or a length more than 30 min off are dropped.
 - КиноПоиск answers in 7–10 s, so it runs in the background and is cached: the first request for a title has no КиноПоиск data, a repeated one has it.
-- Check: `KINOPOISK_API_KEY=… python3 alice/check_search.py` (12 titles, Russian films and series). Response 0.9–1.6 s. RUTUBE found the full film for 7 of 12: Интерстеллар, Иван Васильевич меняет профессию, Москва слезам не верит, Т-34, Кин-дза-дза!, Остров (Lungin). Not found: Брат 2, Дюна, Начало (2010), Холоп, Ликвидация, Игра престолов — for these the КиноПоиск and VK Video searches remain.
+- Check: `KINOPOISK_API_KEY=… python3 alice/check_search.py` (12 titles, Russian films and series). Response 0.9–1.6 s. RUTUBE found the full film for 6 of 12: Интерстеллар, Иван Васильевич меняет профессию, Москва слезам не верит, Т-34, Кин-дза-дза!, Остров (Lungin). Not found: Брат 2, Дюна, Начало (2010), Холоп, Ликвидация, Игра престолов — for these the КиноПоиск and VK Video searches remain.
 
 ## Next steps
 
