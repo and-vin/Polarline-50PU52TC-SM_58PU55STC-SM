@@ -4,7 +4,7 @@
   curl -X POST localhost:8787/send -H 'Authorization: Bearer <s>' -d '{"app":"vk","action":"search","uri":"..."}'
 
 TV side:  GET /tv/poll (long-poll, 204 after 25 s), POST /tv/ack.
-Skill side: POST /send -> waits up to 15 s for the TV's ack and returns it.
+Skill side: POST /send -> waits up to 90 s for the TV's ack and returns it.
 """
 
 import argparse
@@ -64,7 +64,7 @@ class Handler(BaseHTTPRequestHandler):
             cmd["id"] = cmd.get("id") or uuid.uuid4().hex
             commands.put(cmd)
             with acks_ready:
-                acks_ready.wait_for(lambda: cmd["id"] in acks, timeout=15)
+                acks_ready.wait_for(lambda: cmd["id"] in acks, timeout=90)
                 ack = acks.pop(cmd["id"], None)
             return self._send(200 if ack else 504, ack or {"id": cmd["id"], "error": "TV did not answer"})
         self._send(404)
