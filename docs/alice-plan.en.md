@@ -57,7 +57,35 @@ adb shell am start -a android.intent.action.SEARCH -e query "Interstellar" <pack
 
 Result: a table "app → method: film link / search screen with the query / typing via key presses (`input text` as root, fallback)".
 
+### Result (2026-10-28)
+
+Tested with КиноПоиск 2.262.1, RUTUBE 31.14.2.TV-google and VK Video 2.22. The query in a link is URL-encoded (`%D0%98…`).
+
+| App | Video link | Search screen with the query | `SEARCH` + `query` |
+|---|---|---|---|
+| RUTUBE | works: `rutube://rutube.ru/video/<id>/` → player | works: `rutube://rutube.ru/search/?query=<query>` → results | not accepted |
+| VK Video | works: `https://vk.com/video<owner>_<id>` → starts playing | works: `vkvideo://video/search?query=<query>` → results | filter exists, query ignored |
+| КиноПоиск | only with a КиноПоиск HD id; the id format is not established | does not work | filter exists, query ignored |
+
+Working commands:
+
+```
+adb shell am start -a android.intent.action.VIEW -d "rutube://rutube.ru/video/<id>/" rtb.mobile.android
+adb shell am start -a android.intent.action.VIEW -d "'rutube://rutube.ru/search/?query=<query>'" rtb.mobile.android
+adb shell am start -a android.intent.action.VIEW -d "https://vk.com/video<owner>_<id>" com.vk.tv
+adb shell am start -a android.intent.action.VIEW -d "'vkvideo://video/search?query=<query>'" com.vk.tv
+```
+
+Details:
+
+- **RUTUBE:** `https://rutube.ru/...` is not accepted (`unable to resolve Intent`), only the `rutube://rutube.ru` scheme (`ru.rutube.app.SplashActivity`). 18+ videos first ask "Are you 18?", with "No" selected by default.
+- **VK Video:** all links go to `com.vk.tv/.presentation.base.links.TvLinkRedirectActivity` (`https://vk.com/video.*`, `vkvideo://video|vk.com/.*`). That activity has a `SEARCH` filter without the `DEFAULT` category: without `-n` the intent does not resolve, and with `-n` the app opens its home screen. Cold start is about 30 s.
+- **КиноПоиск:** `https://hd.kinopoisk.ru/film/<id>` and `kpatv://film?filmId=<id>` open `HdContentCardActivity`. With a kinopoisk.ru id (`258687`) the app shows "Server unavailable" — it probably needs a КиноПоиск HD id (32 hex); how to get it from a title is not established. `https://www.kinopoisk.ru/film/...` is not accepted. The app has a `kpatv://home` handler with a `search_query` parameter, but `kpatv://home/search?search_query=…` and `kpatv://home?page=search&search_query=…` open the home screen. Before every link КиноПоиск shows "Choose an account" (family account); after choosing, a film link is kept, a search link is lost. The TV service will have to confirm the choice (`input keyevent 23`) or find a way to turn it off. SEARCH does not resolve without `-n`; `.splash.impl.presentation.SplashScreenActivity` is disabled, `DeepLinkTargetActivity` opens the home screen.
+- **Memory:** during the tests the system killed КиноПоиск, RUTUBE, the launcher and Google services at once (`am_proc_died`). The service should close other video apps before opening a link.
+
 ## Next steps
+
+- **The TV is unreachable over the network while asleep (backlog).** The power button puts the TV into suspend-to-RAM (`ro.CVTE_EN_STR=1`): the whole SoC sleeps, Wi‑Fi included, even though `wifi_sleep_policy=2`. The TV answers neither ping nor adb, and the TV service cannot receive a command. Options: Wake-on-WLAN — the firmware has `MtkTvNetwork.setWifiWolCtl(boolean)`/`getWifiWolCtl()`, wake the TV with a magic packet from the LAN (e.g. the router or the station); blocking suspend (a wakelock as root) — higher standby power; the "STR" switch in TV settings — with STR off the TV powers off completely, so the network is gone too. Check what actually works on this firmware.
 
 2. TV service: APK with an outbound connection, commands `open(app, ref)` / `search(app, query)` / `show_list(items)`, start on boot; measure RAM.
 3. Cloud function + queue; a private skill in the Yandex Dialogs console, intents "recommend / another / play / on <app>".
