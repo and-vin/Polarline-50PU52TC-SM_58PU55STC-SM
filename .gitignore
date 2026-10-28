@@ -2,3 +2,5 @@
 launcher/build/
 launcher/keystore/
 *.jks
+agent/build/
+agent/keystore/
