@@ -17,7 +17,16 @@ For TVs on the TP.MT5522S.PC822 chassis (CVTE, firmware `cvt_mt5886_eu_1g`, Andr
 
 ## Install
 
-1. On the TV: Settings → About → press "Build number" 7 times → Developer options → enable USB debugging. The service menu (Menu → 1147) does not work for this: the authorization prompt never appears. If About is not reachable, install Activity Launcher from Google Play and open `com.android.settings` → Developer options through it.
+1. **Enable ADB debugging on the TV.** Recommended: on the remote, press `Menu → 1147` → `Debug → ADB Enable → On`. This works on the project owner's TV: the first PC connection triggers a debugging authorization prompt. A service-menu connection is also reported on [4PDA, post #661](https://4pda.to/forum/index.php?showtopic=980343&st=640). Do not change other service-menu settings.
+
+   If this does not work, try one of these alternatives:
+
+   - If standard Android settings are available: Settings → About → press Build number until developer mode is enabled (usually 7 times) → Developer options → USB debugging.
+   - If Android settings are hidden but installed, try Activity Launcher and open the Developer options activity. The project notes report that `com.android.settings` is absent on the tested `cvt_mt5886_eu_1g` firmware; Activity Launcher cannot open an absent package.
+   - A 4PDA user reports installing a compatible Android Settings APK, then enabling developer mode and USB debugging ([post #252](https://4pda.to/forum/index.php?showtopic=980343&st=240)). The user had a 65-inch TV with the same TP.MT5522S.PC822 board. The specific APK's compatibility with these models and firmware has not been verified; do not install APKs from untrusted sources.
+   - Another report in the same thread describes booting into safe mode by holding the physical Volume Up button on the TV during power-on, then opening advanced settings to reach Android settings and Developer options ([post #245](https://4pda.to/forum/index.php?showtopic=980343&st=240)). This is another owner's experience, not verified on the project models.
+
+   Network ADB uses port 5555; no USB cable is needed. If the TV is listed as `unauthorized`, approve the prompt on its screen (see step 4). If no prompt appears, check that debugging is enabled and reconnect. Do not run the installer until `adb devices` reports `device`.
 2. Find the TV's IP (Settings → Network). The PC must be on the same network, with any VPN off.
 3. Download this repository (Code → Download ZIP) and run:
    - Windows: `powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Tv 192.168.1.50`

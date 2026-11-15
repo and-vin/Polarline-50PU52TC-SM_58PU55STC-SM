@@ -64,7 +64,7 @@ AltoBeam module (`atbm` driver, single radio). Wi‑Fi Direct (the "Wifi display
 
 ## adb
 
-- The authorization prompt appears only if debugging is enabled in Android developer options, not via the service menu.
+- Enabling ADB through the service menu (Menu → 1147 → Debug → ADB Enable → On) works on the project owner's TV: connecting from a PC triggers the authorization prompt (owner confirmed on 2026-11-15). The previous claim that the prompt appears only when debugging is enabled through Android developer options was incorrect. See also [4PDA, post #661](https://4pda.to/forum/index.php?showtopic=980343&st=640). Alternatives and limitations are in [README.en.md](../README.en.md#installation).
 - Once, adbd stopped answering (connection accepted, `device offline`) after several `adb root`/`adb unroot` cycles; the process was alive. A reboot fixed it. The scripts switch to root once.
 
 ## Stock launcher and TvApi

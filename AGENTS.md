@@ -6,7 +6,7 @@ Instructions for AI agents helping an owner of a Polarline 50PU52TC-SM / 58PU55S
 
 - Chassis TP.MT5522S.PC822 (CVTE), MediaTek MT5522, Mali-450, 1 GB RAM, Android 7.0 (SDK 24).
 - Firmware identity: `ro.product.name=cvt_mt5886_eu_1g`, `ro.build.type=userdebug`, `ro.debuggable=1`. Stop if `ro.product.name` differs.
-- ADB over the network on port 5555. Debugging must be enabled in Android developer options (via Activity Launcher → `com.android.settings` if the TV menu does not show it); enabling it through the service menu (Menu → 1147) never shows the authorization prompt.
+- ADB over the network on port 5555. Recommended: remote Menu → 1147 → Debug → ADB Enable → On. The owner confirmed that the service-menu method triggers an authorization prompt on the TV when connecting from a PC (2026-11-15). If needed, use Android developer options where available; Activity Launcher only works if the relevant Settings activity exists. See README for 4PDA alternatives and troubleshooting. Do not change other service-menu settings.
 
 ## Hard rules
 
